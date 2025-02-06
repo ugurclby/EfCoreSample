@@ -1,0 +1,55 @@
+﻿Add-Migration migration_name    = > migration ekler
+Update-Database                 = > son oluşan migration ı db ye yansıtır.
+Update-Database migration_name  = > Eski migration a dönmeyi sağlar. 
+Remove-migration                = > son oluşan migration db ye eklenmediyse siler.
+Remove-migration migration_name = > migration_name i db ye eklenmediyse siler.
+script-migration                = > Migration dosyalarında yapılan işlemleri sql e döker.
+
+--------------------------------------------
+
+State Codes : _context.Entry(entityclass).State
+
+UnChanged = > Db den tablo çekildiği zaman ki durumu ya da savechanges metodu çalıştığında state unchanged olur.
+Detached  = > Entity sınıfı üzerinde bir değişiklik yapıp state sorguladığımız zaman döner. Henüz izlenmeyen durumlar. Sildikten sonrada olur.
+              Ef ye bu sınıfı artık izleme dediğimiz nokta da olur.
+Added     = > Detached olan bir sınıf için add metodu çalışırsa state added olur 
+Modified  = > Db den çekilen bir tablo üzerinde değişiklik yapıldığında state modified olur.
+Deleted   = > Remove metodu sonrası state deleted olur.
+
+--------------------------------------------
+
+context üzerinden bir entity çekildikten sonra üzerinde bir düzenleme yapılırsa update işlemini çağırmadan 
+savechanges metodu çalıştırıldığında otomatik olarak update işlemi yapılır. Gereksiz yere update işlemi çağırılmış olur.
+
+--------------------------------------------
+
+Tablo Configration ayarları : 
+
+3 yöntem var . 
+
+Data annotations Attributes = > Entity class ve propertyler üzerine uygulanan annotations attribute'ler ile yapılır.
+                                [Table("Products")] , [Column("ProductName")] , [Key] gibi.     
+
+Fluent Api                  = > Dbcontext içerisindeki OnModelCreating metodu altında ToTable , HasColumnName , HasKey gibi özellikler kullanılarak yapılır.
+                                modelBuilder.Entity<Product>().ToTable("Products") , modelBuilder.Entity<Product>().Property(p => p.ProductName).HasColumnName("ProductName") gibi.
+
+Convensions                 = > Tüm entityler ef core'un anlayacağı şekilde tanımlanırsa ekstra bir şey yapmaya gerek kalmaz.
+                                tablo : DbSet<Product> , Kolon : PropertyName , Primary Key : Id ve ProductId gibi.
+
+*** Hem Data annotations hemde Fluent Api kullanılabilir. Fluent api data annotations ı ezer. Validasyon için kullanılmış olur.
+
+--------------------------------------------
+
+Tablo İlişkileri :
+
+one to many = > 
+
+Convensions : İlişkili entityler arasında bir navigation property tanımlanmışsa ef core ilişkiyi otomatik olarak algılar.
+               Product sınıfında Category sınıfına ait bir navigation property tanımlanmışsa ef core ilişkiyi otomatik olarak algılar.
+
+Fluent Api  : modelBuilder.Entity<Catalog>().HasMany(x => x.Products).WithOne(x => x.Catalog).HasForeignKey(x => x.CatalogId);          
+
+Data annotations Attributes : [ForeignKey("CatalogId")]
+
+shadow property : foreing key alanın entity içerisinde olmaması durumunda ef core tarafından oluşturulan property dir. 
+Detay tabloya direkt insert işlemi sadece master tablo üzerinden yapılması gereken durumlarda kullanılır.
