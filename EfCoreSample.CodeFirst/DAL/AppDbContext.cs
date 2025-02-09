@@ -11,6 +11,8 @@ public sealed class AppDbContext:DbContext
 {
     public DbSet<Product> Products { get; set; }
     public DbSet<Catalog> Catalogs { get; set; }
+    public DbSet<Teacher> Teachers{ get; set; }
+    public DbSet<Student> Students{ get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -27,6 +29,14 @@ public sealed class AppDbContext:DbContext
 
 
         modelBuilder.Entity<Catalog>().HasMany(x => x.Products).WithOne(x => x.Catalog).HasForeignKey(x => x.Catalog_Id); 
+
+        modelBuilder.Entity<Product>().HasOne(x => x.ProductFeature).WithOne(x => x.Product).HasForeignKey<ProductFeature>(x => x.ProductId);
+
+        modelBuilder.Entity<Teacher>().HasMany(x => x.Students).WithMany(x => x.Teachers).UsingEntity<Dictionary<string, object>>(
+            "TeacherStudent",
+            x => x.HasOne<Student>().WithMany().HasForeignKey("Student_Id"),
+            x => x.HasOne<Teacher>().WithMany().HasForeignKey("Teacher_Id")
+            );
 
         base.OnModelCreating(modelBuilder);
     }

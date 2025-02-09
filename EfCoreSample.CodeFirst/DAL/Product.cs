@@ -21,4 +21,6 @@ public class Product
     
     // Navigation property
     public Catalog Catalog { get; set; }
+
+    public ProductFeature ProductFeature { get; set; }
 }

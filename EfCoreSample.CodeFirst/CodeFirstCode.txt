@@ -40,7 +40,9 @@ Convensions                 = > Tüm entityler ef core'un anlayacağı şekilde 
 
 --------------------------------------------
 
-Tablo İlişkileri :
+Tablo İlişkileri : Bu işin best practice i Convensions dır. Tamamen doğru isimlendirmeler üzerinden ilerlemek gerekir.
+İsimlendirmelerin eksik kaldığı noktada Fluent Api kullanılır.
+Convensions : Ef core un default davranışı
 
 one to many = > 
 
@@ -53,3 +55,22 @@ Data annotations Attributes : [ForeignKey("CatalogId")]
 
 shadow property : foreing key alanın entity içerisinde olmaması durumunda ef core tarafından oluşturulan property dir. 
 Detay tabloya direkt insert işlemi sadece master tablo üzerinden yapılması gereken durumlarda kullanılır.
+
+one to one = > 
+
+Convensions : İlişki kurulacak 2 entity arasında ikinise de navigation property tanımlaması yapılır. Parent tabloya child tablosunun 
+id kolonu verilmez. Child tablosuna parent tablosunun id kolonu verilir.
+
+Fluent Api  :         modelBuilder.Entity<Product>().HasOne(x => x.ProductFeature).WithOne(x => x.Product).HasForeignKey<ProductFeature>(x => x.ProductId);
+
+Data annotations Attributes : [ForeignKey("ProductId")], Hangisinin parent hangisinin child olduğunu belirtmek için ForeignKey ataması yapılmalıdır.
+
+many to many = > 
+
+Convensions : İlişki kurulacak 2 entity arasında ikinise de navigation property tanımlaması yapılır. İki entity de List tipinde bir property tanımlanır. ef core otomatik olarak ilişkiyi algılar. Ara bir tablo oluşturur.
+
+Fluent Api  :         modelBuilder.Entity<Teacher>().HasMany(x => x.Students).WithMany(x => x.Teachers).UsingEntity<Dictionary<string, object>>(
+            "TeacherStudent",
+            x => x.HasOne<Student>().WithMany().HasForeignKey("Student_Id"),
+            x => x.HasOne<Teacher>().WithMany().HasForeignKey("Teacher_Id")
+            );

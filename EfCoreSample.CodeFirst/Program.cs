@@ -1,15 +1,11 @@
 ﻿using EfCoreSample.CodeFirst.DAL;
 using Microsoft.EntityFrameworkCore;
-
 DbContextInitializer.Build();
-
-
-
 
 using (var dbContext = new AppDbContext())
 {
     #region ChangeTracker & Merkezi Insert,update , ContextId
-   
+
     //insert atarken DtCreated dbcontext altında ezilerek set edilir
 
     //dbContext.Add(new Product() { Name = "Defter", Price = 200, Stock = 100, Description = "Deneme" });
@@ -46,7 +42,7 @@ using (var dbContext = new AppDbContext())
     //var singleProduct2 = dbContext.Products.SingleOrDefault(x => x.Id == 1); // id si 1 olan ürünü getirir. Bulamazsa null döner ya da birden fazla varsa hata verir.
 
     //var whereProduct = dbContext.Products.Where(x => x.Price > 500).ToList(); // fiyatı 500 den büyük olan tüm ürünleri getirir. Bulamazsa boş liste döner.
-      
+
     #endregion
 
 
