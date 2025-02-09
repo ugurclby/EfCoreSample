@@ -26,9 +26,11 @@ public sealed class AppDbContext:DbContext
         modelBuilder.Entity<Product>().ToTable("ProductsTb");
         modelBuilder.Entity<Product>().Property(x => x.Description).IsRequired(true).HasMaxLength(100);
         modelBuilder.Entity<Product>().HasKey(x => x.Id);
+        modelBuilder.Entity<Product>().Property(x => x.PriceKdv).HasComputedColumnSql("[Price]*[Kdv]"); 
 
 
-        modelBuilder.Entity<Catalog>().HasMany(x => x.Products).WithOne(x => x.Catalog).HasForeignKey(x => x.Catalog_Id); 
+
+        modelBuilder.Entity<Catalog>().HasMany(x => x.Products).WithOne(x => x.Catalog).HasForeignKey(x => x.Catalog_Id).OnDelete(DeleteBehavior.Restrict); 
 
         modelBuilder.Entity<Product>().HasOne(x => x.ProductFeature).WithOne(x => x.Product).HasForeignKey<ProductFeature>(x => x.ProductId);
 
@@ -45,7 +47,7 @@ public sealed class AppDbContext:DbContext
     {
         foreach (var item in ChangeTracker.Entries())
         {
-            if (item.Entity is Product p)
+            if (item.Entity is IEntity p)
             {
                 if (item.State == EntityState.Added)
                 {

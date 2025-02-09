@@ -74,3 +74,23 @@ Fluent Api  :         modelBuilder.Entity<Teacher>().HasMany(x => x.Students).Wi
             x => x.HasOne<Student>().WithMany().HasForeignKey("Student_Id"),
             x => x.HasOne<Teacher>().WithMany().HasForeignKey("Teacher_Id")
             );
+
+--------------------------------------------
+
+Delete Behavior :
+
+Cascade : Parent tablo üzerinde bir silme işlemi yapıldığında child tablolar üzerinde de silme işlemi yapar.
+Restrict : Parent tablo üzerinde bir silme işlemi yapıldığında child tablosunda bağlı verisi varsa silme işlemi yapmaz ve hata verir.
+SetNull : Parent tablo üzerinde bir silme işlemi yapıldığında child tablolar üzerinde parent tabloya ait alanlar null yapılır.
+NoAction : Parent tablo üzerinde bir silme işlemi yapıldığında child tablolar üzerinde silme işlemi yapmaz.
+
+--------------------------------------------
+
+Database Generated Attribute :
+Computed : Ef core ilgili alanı hem insert hemde update işlemlerinde dahil etme.
+     modelBuilder.Entity<Product>().Property(x => x.PriceKdv).ValueGeneratedOnAddOrUpdate();
+Identity : Ef core sadece insert işleminde kullan update işleminde ilgili alanı dahil etme.
+    modelBuilder.Entity<Product>().Property(x => x.PriceKdv).ValueGeneratedOnAdd();
+None : Veritabanı tarafından otomatik değer üretme özelliğini kapatır.
+    modelBuilder.Entity<Product>().Property(x => x.PriceKdv).ValueGeneratedNever();
+
