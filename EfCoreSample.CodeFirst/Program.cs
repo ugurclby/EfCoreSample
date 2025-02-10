@@ -164,6 +164,37 @@ using (var dbContext = new AppDbContext())
     //}
 
     #endregion
+
+    #region Inheritance
+    // TPH : Table Per Hierarchy
+
+    //dbContext.Bikes.Add(new Bike { Name = "Bisiklet",Model="TestModeli",Wheels=2});
+    //dbContext.SportsCars.Add(new SportsCar { Name = "Ferrari", Model = "TestModeli", Speed = "400" });
+
+    //dbContext.SaveChanges();
+
+    //var vehicles = dbContext.Vehicles.ToList();
+
+    //vehicles.ForEach(x =>
+    //{
+    //    switch (x)
+    //    {
+    //        case Bike bike:
+    //            Console.WriteLine("Bike");
+    //            break;
+    //        case SportsCar sportsCar:
+    //            Console.WriteLine("Car");
+    //            break;
+    //        default:
+    //            break;
+    //    }
+    //});
+
+    // TPT : Table Per Type
+
+
+    #endregion
+
 }
 
 

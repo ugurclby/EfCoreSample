@@ -14,6 +14,9 @@ public sealed class AppDbContext:DbContext
     public DbSet<Teacher> Teachers{ get; set; }
     public DbSet<Student> Students{ get; set; } 
     public DbSet<ProductFeature> ProductFeature { get; set; }
+    public DbSet<Vehicle> Vehicles{ get; set; }
+    public DbSet<Bike> Bikes { get; set; }
+    public DbSet<SportsCar> SportsCars { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -40,6 +43,12 @@ public sealed class AppDbContext:DbContext
             x => x.HasOne<Student>().WithMany().HasForeignKey("Student_Id"),
             x => x.HasOne<Teacher>().WithMany().HasForeignKey("Teacher_Id")
             );
+
+        modelBuilder.Entity<Vehicle>().HasDiscriminator<string>("VehicleType")
+            .HasValue<Vehicle>("Vehicle")
+            .HasValue<Bike>("Bike")
+            .HasValue<SportsCar>("SportsCar");
+
 
         base.OnModelCreating(modelBuilder);
     }

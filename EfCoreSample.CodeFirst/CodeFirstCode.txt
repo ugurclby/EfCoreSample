@@ -111,3 +111,27 @@ Lazy Loading : Explicit Loading ile yaptığı işlem aynı sadece otomatik olar
 catalog.products dediğimiz an kayıtları çeker. Bu özelliği aktif etmek gerekir. İkiside tekrar db tarafına gidip select çeker.
 Lazy loading yapmak için Microsoft.EntityFrameworkCore.Proxies yüklenmenlidir. Navigation property lerin virtual olması gerekir.
 optionsBuilder.UseLazyLoadingProxies().UseSqlServer(DbContextInitializer.Configuration.GetConnectionString("DefaultConnection"));
+
+--------------------------------------------
+
+İnheritance :
+
+TPH(Table Per Hierarchy) : 
+2 türlü ele alınır. 
+1- Base bir sınıf belirlenir. O sınıf üzerinden farklı sınıflar türetilir. Onmodelcreating metodu içinde base tablo dbset olarak verilmezse ef core db de base tabloyu oluşturmaz.
+alt sınıflara atanan kolonlar ile birlikte yeni tabloları oluşturur.
+2- Eğer base sınıf dbcontext sınıfı içinde dbset olarak tanımlanırsa ,tüm entitylerin tek bir tablo üzerinde tutulur ve Discriminator adında bir kolon oluşturur.  
+tüm kayıtları tip ile ayırt eder. Discriminator kolonu string tipindedir. Discriminator kolonu db de oluşur ve ef core tarafından yönetilir.
+Eğer süreç ef core bırakılmayıp kolon ismi ve hangi tabloların hiyerarşik olduğu belirtilmek istenirse Fluent Api kullanılır.
+        modelBuilder.Entity<Vehicle>().HasDiscriminator<string>("VehicleType")
+            .HasValue<Vehicle>("Vehicle")
+            .HasValue<Bike>("Bike")
+            .HasValue<SportsCar>("SportsCar");
+
+TPT(Table Per Type) :
+Base sınıf ve alt sınıfların ayrı ayrı tabloları oluşturulur. Base sınıf dbset olarak tanımlanır. Alt sınıflar dbset olarak tanımlanmaz.
+Bunu yapabilmek için onmodelcreating metodu içinde her entity totable olarak tanımlanır. Ef core bunları db tarafında çoka çok ilişki üzerinden
+bağlar. VEriler vehicle tablosunda durur. 
+    modelBuilder.Entity<Vehicle>().ToTable("Vehicles");
+    modelBuilder.Entity<Bike>().ToTable("Bikes");
+    modelBuilder.Entity<SportsCar>().ToTable("SportsCars");
