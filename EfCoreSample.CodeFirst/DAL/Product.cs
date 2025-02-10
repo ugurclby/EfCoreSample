@@ -29,7 +29,7 @@ public class Product : IEntity
     public int Catalog_Id { get; set; }
     
     // Navigation property
-    public Catalog Catalog { get; set; }
+    public virtual Catalog Catalog { get; set; }
 
-    public ProductFeature ProductFeature { get; set; }
+    public virtual ProductFeature ProductFeature { get; set; }
 }

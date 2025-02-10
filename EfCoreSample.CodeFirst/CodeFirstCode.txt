@@ -94,3 +94,20 @@ Identity : Ef core sadece insert işleminde kullan update işleminde ilgili alan
 None : Veritabanı tarafından otomatik değer üretme özelliğini kapatır.
     modelBuilder.Entity<Product>().Property(x => x.PriceKdv).ValueGeneratedNever();
 
+--------------------------------------------
+
+Related Data Load :
+
+Eager Loading : Include metodu ile ilişkili tabloları birlikte çeker.
+    var products = _context.Products.Include(x => x.ProductFeature).ToList();
+Explicit Loading : İhtiyaç anında ilgili navigation property üzerinden tablo çekme işlemi
+    bire çok ilişki varsa :
+        var product = _context.Products.FirstOrDefault();
+        _context.Entry(product).Collection(x => x.ProductFeature).Load();
+    bire bir ilişki varsa : 
+    var product = _context.Products.FirstOrDefault();
+        _context.Entry(product).Reference(x => x.ProductFeature).Load();
+Lazy Loading : Explicit Loading ile yaptığı işlem aynı sadece otomatik olarak yapar. Load etmeye gerek kalmadan direkt 
+catalog.products dediğimiz an kayıtları çeker. Bu özelliği aktif etmek gerekir. İkiside tekrar db tarafına gidip select çeker.
+Lazy loading yapmak için Microsoft.EntityFrameworkCore.Proxies yüklenmenlidir. Navigation property lerin virtual olması gerekir.
+optionsBuilder.UseLazyLoadingProxies().UseSqlServer(DbContextInitializer.Configuration.GetConnectionString("DefaultConnection"));

@@ -15,7 +15,7 @@ public class Catalog : IEntity
     [MaxLength(100)]
     public string? Description { get; set; }  
     // Navigation property
-    public List<Product> Products { get; set; } = new List<Product>();
+    public virtual List<Product> Products { get; set; } = new List<Product>();
     public DateTime? DtCreated { get ; set  ; }
     public DateTime? DtUpdated { get; set  ; }
 }

@@ -46,18 +46,18 @@ using (var dbContext = new AppDbContext())
     #endregion
 
     #region İnsert-one-to-many
-    var catalogs = new Catalog { Name = "Kırtasiye", Description = "Kırtasiye ürünleri" };
+    //var catalogs = new Catalog { Name = "Kırtasiye", Description = "Kırtasiye ürünleri" };
 
-    var products = new List<Product>();
+    //var products = new List<Product>();
 
-    products.Add(new Product { Name = "Defter2", Description = "Defter2", Price = 100, Stock = 100,Kdv=10 });
-    products.Add(new Product { Name = "Kalem2", Description = "Kalem2", Price = 200, Stock = 1100, Kdv = 10 });
+    //products.Add(new Product { Name = "Defter2", Description = "Defter2", Price = 100, Stock = 100,Kdv=10 });
+    //products.Add(new Product { Name = "Kalem2", Description = "Kalem2", Price = 200, Stock = 1100, Kdv = 10 });
 
-    catalogs.Products.AddRange(products);
+    //catalogs.Products.AddRange(products);
 
-    dbContext.Catalogs.Add(catalogs);
+    //dbContext.Catalogs.Add(catalogs);
 
-    dbContext.SaveChanges();
+    //dbContext.SaveChanges();
     #endregion
 
     #region İnsert-one-to-one
@@ -116,7 +116,6 @@ using (var dbContext = new AppDbContext())
 
     #endregion
 
-
     #region Delete-Behavior-İşlemleri
     //try
     //{
@@ -130,6 +129,39 @@ using (var dbContext = new AppDbContext())
     //    Console.WriteLine(ex.InnerException.Message);
     //}
 
+
+    #endregion
+
+    #region Related-Data-Load
+
+    // Eager Loading
+
+    //var catalog = dbContext.Catalogs.Include(x => x.Products).ThenInclude(x => x.ProductFeature).FirstOrDefault();
+
+    //var products = dbContext.Products.Include(x => x.ProductFeature).Include(x=>x.Catalog).ToList();
+
+    //var productFeature = dbContext.ProductFeature.Include(x => x.Product).ThenInclude(x=>x.Catalog).ToList();
+
+    // Explicit Loading
+
+    //var catalog2 = dbContext.Catalogs.First();
+
+    //dbContext.Entry(catalog2).Collection(x => x.Products).Load();
+
+    //var prodcuts2 = dbContext.Products.First();
+
+    //dbContext.Entry(prodcuts2).Reference(x => x.ProductFeature).Load();
+
+    // Lazy Loading
+
+    //var catalog3 = dbContext.Catalogs.First(); // Bu aşamada product boş.
+
+    //var products3 = catalog3.Products.ToList(); // Bu aşamada db ye gidip select çeker
+
+    //foreach (var item in products3)
+    //{
+    //    var productFeature = item.ProductFeature; // Her loop da sorgu atacak. Performans sorunu olur. N+1 problemi denir.
+    //}
 
     #endregion
 }

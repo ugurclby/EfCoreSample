@@ -12,13 +12,14 @@ public sealed class AppDbContext:DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<Catalog> Catalogs { get; set; }
     public DbSet<Teacher> Teachers{ get; set; }
-    public DbSet<Student> Students{ get; set; }
+    public DbSet<Student> Students{ get; set; } 
+    public DbSet<ProductFeature> ProductFeature { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
 
         DbContextInitializer.Build();
-        optionsBuilder.UseSqlServer(DbContextInitializer.Configuration.GetConnectionString("DefaultConnection"));
+        optionsBuilder.LogTo(Console.WriteLine,Microsoft.Extensions.Logging.LogLevel.Information).UseLazyLoadingProxies().UseSqlServer(DbContextInitializer.Configuration.GetConnectionString("DefaultConnection"));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
