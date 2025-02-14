@@ -135,3 +135,94 @@ bağlar. VEriler vehicle tablosunda durur.
     modelBuilder.Entity<Vehicle>().ToTable("Vehicles");
     modelBuilder.Entity<Bike>().ToTable("Bikes");
     modelBuilder.Entity<SportsCar>().ToTable("SportsCars");
+
+--------------------------------------------
+
+Owned Entity Types : Birden fazla entity içerisinde aynı propertylerin tekrar tekrar tanımlanmasını engellemek için kullanılır.
+Farklı bir sınıf tanımlanır. Bu sınıf içinde tekra eden propertyler tanımlanır. Bu sınıfı bir id'si olmaz.
+Bu yöntemi uygulamak için data annotations attribute kullanılabilir. 
+    [Owned]
+    public class Address
+    {
+        public string City { get; set; }
+        public string Street { get; set; }
+    }
+    public class Customer
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public Address Address { get; set; }
+    }
+Ayrıca fluent api ile de yapılabilir.
+    modelBuilder.Entity<Customer>().OwnsOne(x => x.Address);    
+
+Keyless Entity Types : Db de tablo oluşturulmaz. Sadece select işlemleri için kullanılır. 
+   fluent api: modelBuilder.Entity<Customer>().HasNoKey();
+   data annotations : [Keyless]
+
+--------------------------------------------
+Entity Properties :
+NotMapped => Db de oluşturulmasını istemediğimiz propertyler için kullanılır.
+    Fluent Api : modelBuilder.Entity<Product>().Ignore(x => x.FullName);
+    Data Annotations :
+    [NotMapped]
+    public string FullName { get; set; }
+Unicode => Db de nvarchar/varchar olarak oluşturulmasını sağlar.
+    Fluent Api : modelBuilder.Entity<Product>().Property(x => x.ProductName).IsUnicode(true/false);
+    Data Annotations : [Unicode(true/false)]
+ColumnType = > Db de oluşturulacak kolonun tipini belirler.
+    Fluent Api : modelBuilder.Entity<Product>().Property(x => x.ProductName).HasColumnType("varchar(100)");
+    Data Annotations : [Column(TypeName = "varchar(100)")]
+ MaxLength = > Db de oluşturulacak kolonun max uzunluğunu belirler.
+ Fluent Api : modelBuilder.Entity<Product>().Property(x => x.ProductName).HasMaxLength(100);
+    Data Annotations : [MaxLength(100)]
+Required = > Db de oluşturulacak kolonun boş geçilemez olmasını sağlar. 
+   Fluent Api : modelBuilder.Entity<Product>().Property(x => x.ProductName).IsRequired();
+    Data Annotations : [Required]
+  HasDefaultValue = > Db de oluşturulacak kolonun default değerini belirler.
+   Fluent Api : modelBuilder.Entity<Product>().Property(x => x.ProductName).HasDefaultValue("Default");
+    Data Annotations : [HasDefaultValue("Default")]
+HasComputedColumnSql = > Kolonun uygulama seviyesinde hesaplanmasını engeller. Defautl değer atanarak işlem db de yapılır.
+    Fluent Api : modelBuilder.Entity<Product>().Property(x => x.ProductName).HasComputedColumnSql("Default");
+    Data Annotations : [HasComputedColumnSql("Default")]
+ValueGeneratedOnAdd = > Kolonun sadece insert işleminde değer almasını sağlar.
+    Fluent Api : modelBuilder.Entity<Product>().Property(x => x.ProductName).ValueGeneratedOnAdd();
+    Data Annotations : [ValueGeneratedOnAdd]
+ValueGeneratedOnAddOrUpdate = > Kolonun insert ve update işlemlerinde değer almasını sağlar.
+    Fluent Api : modelBuilder.Entity<Product>().Property(x => x.ProductName).ValueGeneratedOnAddOrUpdate();
+    Data Annotations : [ValueGeneratedOnAddOrUpdate]
+ValueGeneratedNever = > Kolonun insert ve update işlemlerinde değer almamasını sağlar.
+    Fluent Api : modelBuilder.Entity<Product>().Property(x => x.ProductName).ValueGeneratedNever();
+    Data Annotations : [ValueGeneratedNever]
+--------------------------------------------
+Index :
+Index : Db de oluşturulacak index i belirler.
+    Fluent Api : modelBuilder.Entity<Product>().HasIndex(x => x.ProductName);
+    Data Annotations : [Index(nameof(kolon1)]
+Composite Index : Birden fazla kolon üzerinde index oluşturmak için kullanılır.
+    Fluent Api : modelBuilder.Entity<Product>().HasIndex(x => new { x.ProductName, x.Price });
+    Data Annotations : [Index(nameof(Kolon1),nameof(Kolon2))]
+Unique Index : Db de oluşturulacak unique index i belirler.
+    Fluent Api : modelBuilder.Entity<Product>().HasIndex(x => x.ProductName).IsUnique();
+    Data Annotations : [Index(nameof(kolon1), IsUnique = true)]
+Include Index : Index oluşturulurken başka kolonlarında index oluşturulmasını sağlar.
+    Fluent Api : modelBuilder.Entity<Product>().HasIndex(x => x.ProductName).IncludeProperties(x => x.Price);
+    Data Annotations : [Index(nameof(kolon1), IsUnique = true, Include = new[] { nameof(kolon2) })]
+
+----------------------------------------------
+
+Constraints :
+Check Constraint : Db de oluşturulacak check constraint i belirler.Kolon ya da tablo bazında verilebilir.
+    Fluent Api : modelBuilder.Entity<Product>().Property(x => x.Price).HasCheckConstraint("Price > 0");
+                modelBuilder.Entity<Product>().HasCheckConstraint("PriceDiscountCheck","[Price]>[DiscountPrice]");
+    Data Annotations : [CheckConstraint("Price > 0")]
+
+----------------------------------------------
+QUERY :
+
+
+
+
+
+
+
