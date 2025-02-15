@@ -1,5 +1,7 @@
 ﻿using EfCoreSample.CodeFirst.DAL;
 using Microsoft.EntityFrameworkCore;
+using System.Net.WebSockets;
+using System.Security.Cryptography;
 DbContextInitializer.Build();
 
 using (var dbContext = new AppDbContext())
@@ -195,9 +197,150 @@ using (var dbContext = new AppDbContext())
 
     #endregion
 
+    #region Query
+
+
+
+    //var customer = new List<Customer>() {
+    //    new Customer (){
+    //    FullName = "Ali Yılmaz",
+    //    Email = "ali.yilmaz@example.com",
+    //    Phone = "555-1234",
+    //    Address = "İstanbul, Türkiye"
+
+    //},new Customer (){
+    //FullName = "Test Yılmaz",
+    //    Email = "ali.yilmaz@example.com",
+    //    Phone = "555-1234",
+    //    Address = "İstanbul, Türkiye"}
+    //,new Customer (){
+    //FullName = "Test2 Yılmaz",
+    //    Email = "ali.yilmaz@example.com",
+    //    Phone = "555-1234",
+    //    Address = "İstanbul, Türkiye"}
+    //};
+
+    //var customer = new List<Customer>() {
+    //    new Customer (){
+    //    FullName = "Test3 Yılmaz",
+    //    Email = "ali.yilmaz@example.com",
+    //    Phone = "555-1234",
+    //    Address = "İstanbul, Türkiye" } };
+
+    //dbContext.Customers.AddRange(customer);
+   
+
+    //var orders = new List<Order>() {
+    //    new Order (){
+    //    CustomerId = 1,
+    //    TotalAmount = 100,
+    //    Status = "Onaylandı"
+    //},new Order (){
+    //    CustomerId = 1,
+    //    TotalAmount = 200,
+    //    Status = "Onaylandı"
+    //},new Order (){
+    //    CustomerId = 2,
+    //    TotalAmount = 300,
+    //    Status = "Onaylandı"}
+    //,new Order (){
+    //    CustomerId = 3,
+    //    TotalAmount = 300,
+    //    Status = "Onaylandı"}};
+
+    //dbContext.Orders.AddRange(orders);
+
+
+    //var orderDetails = new List<OrderDetail>() {
+    //    new OrderDetail (){
+    //    ProductName = "Ürün 1",
+    //    Quantity = 1,
+    //    UnitPrice = 100,
+    //    OrderId = 1
+
+    //},new OrderDetail (){
+    //    ProductName = "Ürün 2",
+    //    Quantity = 2,
+    //    UnitPrice = 200,
+    //    OrderId = 2
+    //},new OrderDetail (){
+    //    ProductName = "Ürün 3",
+    //    Quantity = 3,
+    //    UnitPrice = 300,
+    //    OrderId = 3} };
+
+    //dbContext.OrderDetails.AddRange(orderDetails);
+
+    //dbContext.SaveChanges();
+    #region InnerJoin
+
+    // Metod Sytanx : 
+    var metodJoin = dbContext.Customers.Join(dbContext.Orders, c => c.CustomerId, o => o.CustomerId, (c, o) => new { c, o })
+                       .Join(dbContext.OrderDetails,o=>o.o.OrderId,od=>od.OrderId,(o,od)=>new {o,od}).ToList();
+
+    // Query Syntax :
+    var sqlJoin = (from c in dbContext.Customers
+                   join o in dbContext.Orders on c.CustomerId equals o.CustomerId
+                   join od in dbContext.OrderDetails on o.OrderId equals od.OrderId
+                   select new { c, o, od }).ToList();
+
+    #endregion
+
+    #region Left-Right Join
+    
+    // Query Syntax :
+    var leftJoin =  (from c in dbContext.Customers
+                     join o in dbContext.Orders on c.CustomerId equals o.CustomerId into oList
+                     from olist in oList.DefaultIfEmpty()
+                     select new { c, olist }).ToList();
+    
+    // Metod Sytanx :
+    var left2 = dbContext.Customers.GroupJoin(dbContext.Orders, c => c.CustomerId, o => o.CustomerId, (c, o) => new { c, o })
+        .SelectMany(x => x.o.DefaultIfEmpty(), (x, y) => new { x.c, y }).ToList();
+
+
+    var rightJoin = (from o in dbContext.Orders
+                     join c in dbContext.Customers on o.CustomerId equals c.CustomerId into cList
+                     from clist in cList.DefaultIfEmpty()
+                     select new { o, clist }).ToList();
+
+    #endregion
+
+    #region Full-Outer Join
+
+    var left = (from c in dbContext.Customers
+                join o in dbContext.Orders on c.CustomerId equals o.CustomerId into oList
+                from olist in oList.DefaultIfEmpty()
+                select new { OrderId= (int?)olist.OrderId,CustomerId= (int?)olist.CustomerId,Name = c.FullName }).ToList();
+
+    var right = (from o in dbContext.Orders
+                 join c in dbContext.Customers on o.CustomerId equals c.CustomerId into cList
+                 from clist in cList.DefaultIfEmpty()
+                 select new { OrderId = (int?)o.OrderId, CustomerId = (int?)o.CustomerId, Name = clist.FullName }).ToList();
+
+    var fullOuter = left.Union(right).ToList();
+
+
+    #endregion
+
+    #region RawSql-1
+
+    var customers = dbContext.Customers.FromSqlRaw("SELECT * FROM Customers").ToList();
+
+    var customer = dbContext.Customers.FromSqlRaw("SELECT * FROM Customers WHERE CustomerId = {0}", 1).ToList();
+
+    var order = dbContext.Orders.FromSqlInterpolated($"SELECT * FROM Orders WHERE CustomerId = {1}").ToList();
+
+
+    var customerWithOrder = dbContext.CustomerWithOrders.FromSqlRaw("SELECT c.CustomerId,c.FullName,c.Email,o.TotalAmount FROM Customers c inner join orders o on c.CustomerId=o.CustomerId").ToList();
+
+    #endregion
+
+    #region ToSqlQuery
+
+    var orderWithOrderDetails = dbContext.OrderWithDetails.ToList(); // Sorgusu direkt onmodelcreating tarafında yazıldı.
+    var orderWithOrderDetails2 = dbContext.OrderWithDetails.Where(x=>x.OrderId==1).ToList(); // Db ye direkt kriter ile gider.
+    #endregion
+
+    #endregion
 }
-
-
-
-
-

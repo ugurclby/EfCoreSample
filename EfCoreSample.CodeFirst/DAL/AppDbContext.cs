@@ -17,6 +17,12 @@ public sealed class AppDbContext:DbContext
     public DbSet<Vehicle> Vehicles{ get; set; }
     public DbSet<Bike> Bikes { get; set; }
     public DbSet<SportsCar> SportsCars { get; set; }
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderDetail> OrderDetails { get; set; }
+    public DbSet<CustomerWithOrder> CustomerWithOrders { get; set; }
+
+    public DbSet<OrderWithDetail> OrderWithDetails { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -50,6 +56,11 @@ public sealed class AppDbContext:DbContext
             .HasValue<SportsCar>("SportsCar");
 
 
+        modelBuilder.Entity<CustomerWithOrder>().HasNoKey().ToView(null);
+
+        modelBuilder.Entity<OrderWithDetail>().HasNoKey().ToSqlQuery("SELECT od.OrderDetailId,od.OrderId,o.OrderDate,o.TotalAmount,od.ProductName FROM Orders o inner join OrderDetails od on o.OrderId = od.OrderId");
+ 
+ 
         base.OnModelCreating(modelBuilder);
     }
 

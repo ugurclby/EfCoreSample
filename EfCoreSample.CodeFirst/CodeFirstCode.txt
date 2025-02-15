@@ -219,7 +219,12 @@ Check Constraint : Db de oluşturulacak check constraint i belirler.Kolon ya da 
 
 ----------------------------------------------
 QUERY :
-
+Inner Join = > 
+    var products = _context.Products.Join(_context.Categories, p => p.CategoryId, c => c.Id, (product, category) => new
+    {
+        product.ProductName,
+        category.CategoryName
+    }).ToList();
 
 
 
