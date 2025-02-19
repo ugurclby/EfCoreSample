@@ -24,11 +24,22 @@ public sealed class AppDbContext:DbContext
 
     public DbSet<OrderWithDetail> OrderWithDetails { get; set; }
 
+    public DbSet<VCustomersWithOrders> VCustomersWithOrders { get; set; }
+
+    public DbSet<Users> User { get; set; }
+
+    public DbSet<FcUsers> FcUser { get; set; }
+
+    public DbSet<UserCount> Count { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
 
         DbContextInitializer.Build();
-        optionsBuilder.LogTo(Console.WriteLine,Microsoft.Extensions.Logging.LogLevel.Information).UseLazyLoadingProxies().UseSqlServer(DbContextInitializer.Configuration.GetConnectionString("DefaultConnection"));
+        optionsBuilder.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
+                      .UseLazyLoadingProxies()
+                      .UseSqlServer(DbContextInitializer.Configuration.GetConnectionString("DefaultConnection"));
+                      //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking); 
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -59,9 +70,35 @@ public sealed class AppDbContext:DbContext
         modelBuilder.Entity<CustomerWithOrder>().HasNoKey().ToView(null);
 
         modelBuilder.Entity<OrderWithDetail>().HasNoKey().ToSqlQuery("SELECT od.OrderDetailId,od.OrderId,o.OrderDate,o.TotalAmount,od.ProductName FROM Orders o inner join OrderDetails od on o.OrderId = od.OrderId");
- 
- 
+
+
+        modelBuilder.Entity<VCustomersWithOrders>().HasNoKey().ToView("VCustomersWithOrders");
+
+        modelBuilder.Entity<Users>().ToTable("Users");
+
+        modelBuilder.Entity<Customer>().Property(x => x.IsDeleted).HasDefaultValue(false);
+        
+        modelBuilder.Entity<Customer>().HasQueryFilter(x => !x.IsDeleted);
+
+        modelBuilder.Entity<FcUsers>().ToFunction("fc_GetUsers");
+
+        modelBuilder.HasDbFunction( typeof(AppDbContext).GetMethod(nameof(GetFcUsers), new[] { typeof(int) })!).HasName("fc_GetUsersParam");
+
+        modelBuilder.HasDbFunction(typeof(AppDbContext).GetMethod(nameof(GetFcUsersCount), new[] { typeof(int) })!).HasName("fc_GetUsersParamCount");
+
+        modelBuilder.Entity<UserCount>().HasNoKey();
+
         base.OnModelCreating(modelBuilder);
+    }
+
+    public IQueryable<FcUsers> GetFcUsers(int userId)
+    {
+        return FromExpression(() => GetFcUsers(userId));
+    }
+
+    public int GetFcUsersCount(int userId)
+    {
+       throw new NotSupportedException("Bu metod ef core tarafından kullanılıyor");
     }
 
     public override int SaveChanges()

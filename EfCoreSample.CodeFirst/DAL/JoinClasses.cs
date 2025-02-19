@@ -13,6 +13,8 @@ public class Customer
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public bool IsDeleted { get; set; }
+
 }
 
 public class Order

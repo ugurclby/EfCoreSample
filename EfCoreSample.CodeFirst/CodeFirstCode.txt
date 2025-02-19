@@ -218,16 +218,13 @@ Check Constraint : Db de oluşturulacak check constraint i belirler.Kolon ya da 
     Data Annotations : [CheckConstraint("Price > 0")]
 
 ----------------------------------------------
-QUERY :
-Inner Join = > 
-    var products = _context.Products.Join(_context.Categories, p => p.CategoryId, c => c.Id, (product, category) => new
-    {
-        product.ProductName,
-        category.CategoryName
-    }).ToList();
-
-
-
-
+Track/No Track :
+Track : Db den çekilen verilerin değişikliklerini takip etmek için kullanılır. Default olarak track edilir.
+NoTrack : Db den çekilen verilerin değişikliklerini takip etmemek için kullanılır. Büyük verilerin geleceği durumlarda kullanılır.
+ 
+Eğer bu süreci sorgu içinde değil global yerden yönetmk istenirse aşağıdaki kod kullanılır.
+ dbcontext altında yer alan OnConfiguring metodu içinde aşağıdaki kod yazılır :
+ optionsBuilder.UseSqlServer(DbContextInitializer.Configuration.GetConnectionString("DefaultConnection"))
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
 
