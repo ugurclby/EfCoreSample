@@ -227,4 +227,8 @@ Eğer bu süreci sorgu içinde değil global yerden yönetmk istenirse aşağıd
  optionsBuilder.UseSqlServer(DbContextInitializer.Configuration.GetConnectionString("DefaultConnection"))
             .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
+----------------------------------------------
 
+Transaction :
+ - Eğer tek bir işlem varsa yani tek transaction ile yapılabilecek bir işlem ise ef core savechanges metodu içinde transaction işlemi yapılabilir.
+ 
