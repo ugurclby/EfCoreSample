@@ -230,5 +230,6 @@ Eğer bu süreci sorgu içinde değil global yerden yönetmk istenirse aşağıd
 ----------------------------------------------
 
 Transaction :
- - Eğer tek bir işlem varsa yani tek transaction ile yapılabilecek bir işlem ise ef core savechanges metodu içinde transaction işlemi yapılabilir.
+ - Eğer tek bir işlem varsa yani tek transaction ile yapılabilecek bir işlem ise ef core savechanges metodu içinde transactionı yönetir.
+ - Eğer birden fazla işlem varsa ve bu işlemler birbirine bağlı ise transaction yönetimi yapılmalıdır.
  

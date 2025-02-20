@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,18 @@ using System.Threading.Tasks;
 namespace EfCoreSample.CodeFirst.DAL;
 public sealed class AppDbContext:DbContext
 {
+    private readonly DbConnection _dbConnection;
+
+    public AppDbContext()
+    {
+            
+    }
+    public AppDbContext(DbConnection dbConnection)
+    {
+        _dbConnection = dbConnection;
+    }
+
+
     public DbSet<Product> Products { get; set; }
     public DbSet<Catalog> Catalogs { get; set; }
     public DbSet<Teacher> Teachers{ get; set; }
@@ -34,12 +47,21 @@ public sealed class AppDbContext:DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        if (_dbConnection ==null)
+        {
+            DbContextInitializer.Build();
+            optionsBuilder.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
+                          .UseLazyLoadingProxies()
+                          .UseSqlServer(_dbConnection);
+            //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking); 
+        }
+        else
+        {
+            optionsBuilder.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
+                          .UseLazyLoadingProxies()
+                          .UseSqlServer(_dbConnection);
+        }
 
-        DbContextInitializer.Build();
-        optionsBuilder.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information)
-                      .UseLazyLoadingProxies()
-                      .UseSqlServer(DbContextInitializer.Configuration.GetConnectionString("DefaultConnection"));
-                      //.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking); 
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -74,7 +96,7 @@ public sealed class AppDbContext:DbContext
 
         modelBuilder.Entity<VCustomersWithOrders>().HasNoKey().ToView("VCustomersWithOrders");
 
-        modelBuilder.Entity<Users>().ToTable("Users");
+        modelBuilder.Entity<Users>().ToTable("User");
 
         modelBuilder.Entity<Customer>().Property(x => x.IsDeleted).HasDefaultValue(false);
         

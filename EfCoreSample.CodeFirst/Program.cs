@@ -4,13 +4,18 @@ using EfCoreSample.CodeFirst.Dtos;
 using EfCoreSample.CodeFirst.MappingConfigration;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Configuration;
 using System.Data;
+using System.Data.Common;
 using System.Net.WebSockets;
 using System.Reflection.Emit;
 using System.Security.Cryptography;
 DbContextInitializer.Build();
 
-using (var dbContext = new AppDbContext())
+DbConnection dbConnection = new SqlConnection(DbContextInitializer.Configuration.GetConnectionString("DefaultConnection"));
+
+using (var dbContext = new AppDbContext(dbConnection))
 {
     #region ChangeTracker & Merkezi Insert,update , ContextId
 
@@ -393,27 +398,26 @@ using (var dbContext = new AppDbContext())
 
     #endregion
 
-
     #region Function
 
     // Geriye table dönen ve parametre almayan fonksiyonlar view gibi çalışır. Onmodelcreating tarafında tanımlanır.
-    var fcuser = dbContext.FcUser.ToList();
+    //var fcuser = dbContext.FcUser.ToList();
 
-    // Geriye table dönen ve parametre alan fonksiyonlar fromsqlinterpolated ile çalıştırılır ya da onmodelcreating tarafında hasfunction ile tanımlanır.
-    var fcuser2 = dbContext.FcUser.FromSqlInterpolated($"SELECT * FROM dbo.fc_GetUsersParam(1)").ToList();
+    //// Geriye table dönen ve parametre alan fonksiyonlar fromsqlinterpolated ile çalıştırılır ya da onmodelcreating tarafında hasfunction ile tanımlanır.
+    //var fcuser2 = dbContext.FcUser.FromSqlInterpolated($"SELECT * FROM dbo.fc_GetUsersParam(1)").ToList();
 
-    var fcuser3 = dbContext.GetFcUsers(1).ToList();
+    //var fcuser3 = dbContext.GetFcUsers(1).ToList();
 
-    //var count = dbContext.GetFcUsersCount(1); // bu şekilde çağırıldığı zaman hata verir.
-    // Geriye int ya da string dönen fonksiyonlar scalar olarak çalışır.
-    var users = dbContext.User.Select(x => new
-    {
-        Name = x.Name,
-        Count = dbContext.GetFcUsersCount(x.Id) // Geriye int dönen fonksiyon on model creating altında tanımlanır ve sadece bu şekilde çalıştırılır.
-    });
+    ////var count = dbContext.GetFcUsersCount(1); // bu şekilde çağırıldığı zaman hata verir.
+    //// Geriye int ya da string dönen fonksiyonlar scalar olarak çalışır.
+    //var users = dbContext.User.Select(x => new
+    //{
+    //    Name = x.Name,
+    //    Count = dbContext.GetFcUsersCount(x.Id) // Geriye int dönen fonksiyon on model creating altında tanımlanır ve sadece bu şekilde çalıştırılır.
+    //});
 
-    // Eğer direkt fonksiyon tek başına çağırılmak isteniyorsa model ile mapplemek gerekir.
-    var userCount = dbContext.Count.FromSqlInterpolated($"SELECT dbo.fc_GetUsersParamCount(1) as Count").First().Count;
+    //// Eğer direkt fonksiyon tek başına çağırılmak isteniyorsa model ile mapplemek gerekir.
+    //var userCount = dbContext.Count.FromSqlInterpolated($"SELECT dbo.fc_GetUsersParamCount(1) as Count").First().Count;
 
     #endregion
 
@@ -433,6 +437,59 @@ using (var dbContext = new AppDbContext())
 
     var customers4 = dbContext.Customers.ProjectTo<CustomerDto>(ObjectMapper.Mapper().ConfigurationProvider).Where(x=>x.CustomerId>5) .ToList();
 
+
+    #endregion
+
+    #region Transaction
+    
+    // Tek dbcontext üzerinden transaction işlemi yapılır.
+    //using (var transaction = dbContext.Database.BeginTransaction())
+    //{
+    //    dbContext.User.Add(new Users
+    //    {
+    //        Name = "Uğur"
+    //    });
+
+    //    dbContext.SaveChanges(); // burada id alır. Fakat db ye yansıma işi yapılmaz.
+
+    //    dbContext.Catalogs.Add(new Catalog
+    //    {
+    //        Name = "Spor",
+    //        Description = "Spor ürünleri" 
+    //    });
+
+    //    dbContext.SaveChanges(); // burada id alır. Fakat db ye yansıma işi yapılmaz. 
+
+    //    transaction.Commit(); // işlemler başarılı ise db ye yansıtılır.
+    //}
+
+    // Birden fazla dbcontext üzerinden transaction işlemi yapılır.
+    using (var transaction = dbContext.Database.BeginTransaction())
+    {
+        dbContext.User.Add(new Users
+        {
+            Name = "Uğur2"
+        });
+        dbContext.SaveChanges();
+        dbContext.Catalogs.Add(new Catalog
+        {
+            Name = "Araba",
+            Description = "Araba ürünleri"
+        });
+        dbContext.SaveChanges();
+
+        using (var dbcontext2 = new AppDbContext(dbConnection))
+        {
+            var trans = transaction.GetDbTransaction();
+            dbcontext2.Database.UseTransaction(trans);
+
+            dbcontext2.Students.Add(new Student { DtCreated = DateTime.Now, Email = "asd", Name = "asd" });
+            dbcontext2.SaveChanges();
+
+        } 
+
+        transaction.Commit(); 
+    }
 
     #endregion
 
