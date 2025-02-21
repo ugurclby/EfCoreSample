@@ -441,27 +441,27 @@ using (var dbContext = new AppDbContext(dbConnection))
     #endregion
 
     #region Transaction
-    
-    // Tek dbcontext üzerinden transaction işlemi yapılır.
-    //using (var transaction = dbContext.Database.BeginTransaction())
-    //{
-    //    dbContext.User.Add(new Users
-    //    {
-    //        Name = "Uğur"
-    //    });
 
-    //    dbContext.SaveChanges(); // burada id alır. Fakat db ye yansıma işi yapılmaz.
+    //Tek dbcontext üzerinden transaction işlemi yapılır.
+    using (var transaction = dbContext.Database.BeginTransaction())
+    {
+        dbContext.User.Add(new Users
+        {
+            Name = "Uğur"
+        });
 
-    //    dbContext.Catalogs.Add(new Catalog
-    //    {
-    //        Name = "Spor",
-    //        Description = "Spor ürünleri" 
-    //    });
+        dbContext.SaveChanges(); // burada id alır. Fakat db ye yansıma işi yapılmaz.
 
-    //    dbContext.SaveChanges(); // burada id alır. Fakat db ye yansıma işi yapılmaz. 
+        dbContext.Catalogs.Add(new Catalog
+        {
+            Name = "Spor",
+            Description = "Spor ürünleri"
+        });
 
-    //    transaction.Commit(); // işlemler başarılı ise db ye yansıtılır.
-    //}
+        dbContext.SaveChanges(); // burada id alır. Fakat db ye yansıma işi yapılmaz. 
+
+        transaction.Commit(); // işlemler başarılı ise db ye yansıtılır.
+    }
 
     // Birden fazla dbcontext üzerinden transaction işlemi yapılır.
     using (var transaction = dbContext.Database.BeginTransaction())

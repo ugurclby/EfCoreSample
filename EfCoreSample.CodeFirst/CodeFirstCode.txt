@@ -232,4 +232,47 @@ Eğer bu süreci sorgu içinde değil global yerden yönetmk istenirse aşağıd
 Transaction :
  - Eğer tek bir işlem varsa yani tek transaction ile yapılabilecek bir işlem ise ef core savechanges metodu içinde transactionı yönetir.
  - Eğer birden fazla işlem varsa ve bu işlemler birbirine bağlı ise transaction yönetimi yapılmalıdır.
- 
+
+----------------------------------------------
+
+Concunrency Effects:
+
+Lost Update : Aynı anda aynı kayıt üzerinde yapılan işlemlerden biri diğerini siler. Örnek olarak son 2 ayrı transaction da aynı kayıt üzerinde update işlemi yapılırsa
+son yapılan işlem diğerini siler.
+
+Dirty Read : Bir transaction içinde yapılan değişiklikler commit edilmeden önce diğer transaction tarafından okunursa buna dirty read denir.
+
+Non-Repeatable Read : Bir transaction için tekrarlı bir okuma yapamama durumudur. Örnek olarak bir transaction içinde bir kayıt okundu. Okunan transaction da farklı işlemler yapılırken
+Farklı bir transaction da herhangi bir kayıt silindi. İlk transaction tekrar aynı kaydı okumak istediğinde kayıt bulunamaz. Tutarsız bir durum oluşur.
+
+Phantom Read : Non-Repeatable Read ile aynıdır. Tek fark update işleminin yanı sıra insert işlemi de olabilir.
+
+Isolation seviyesi arttıkça tutarlılık artar fakat performans düşer. Eş zamanlılık çok öenmli ise isolation seviyesi azaltılmaldır.
+
+----------------------------------------------
+
+Isolation Level :
+ - Db de aynı anda çalışan işlemlerin birbirlerini etkilememesi için kullanılır.
+ - Db de 4 adet isolation level vardır.
+    ReadUncommitted : Bir işlem diğer işlemin yaptığı değişiklikleri görebilir. En düşük izolasyon seviyesidir. Veri tutarsızlığının olma ihtimali çok yüksektir. Çünkü farklı 
+    transactionlar içinde commit edilmemiş veriler okunabilir.Dirty read, Inconsistent Data , Non-Repeatable Read(Aynı sorgu farklı sonuçlar dönebilir ) , Phantom Read (Insert ve update işlemleri olabilir) gibi sorunlar oluşabilir.
+    using (var transaction = _context.Database.BeginTransaction(IsolationLevel.ReadUncommitted)) 
+
+    ReadCommitted : Bir işlem diğer işlemin yaptığı değişiklikleri göremez. Transaction yalnızca commit edilmiş verileri okuyabilir. Dirty read sorunu olmaz. Varsayılan izolasyon seviyesidir.
+    Non-Repeatable Read(Aynı sorgu farklı sonuçlar dönebilir ) , Phantom Read (Insert ve update işlemleri olabilir) gibi sorunlar oluşabilir.
+    using (var transaction = _context.Database.BeginTransaction(IsolationLevel.ReadCommitted))  
+
+    RepeatableRead : Bir işlem diğer işlemin yaptığı değişiklikleri göremez ve diğer işlemdeki verileri değiştiremez. Örnek olarak bir transaction da products tablosundan 
+    id si 1 ile 10 arasında olan 10 kayıt çekilir. Farklı bir transaction da bu id'lerden herhangi biri update ya da delete edilmek istenirse hata alınır. Diğer transaction biteene kadar işlem yapamaz.
+    Dirty Read , Non-Repeatable Read önlenir. Phantom Read olabilir.
+    using (var transaction = _context.Database.BeginTransaction(IsolationLevel.RepeatableRead))   
+
+    Serializable : Bir işlem diğer işlemlerle aynı anda çalışamaz.  RepeatableRead dan a esktra oalrak insert işlemleri de engellenir.
+    Örnek oalrak products tablosuna select çekilir. Farklı bir transaction da insert işlemi yapılırsa hata alınır. diğer transaction bitene kadar işlem yapamaz.
+    Dirty Read , Non-Repeatable Read ve Phantom Read önlenir. Fakat Deadlock olabilir , performans sorunları olabilir , paralel çalışmayı engeller.
+    using (var transaction = _context.Database.BeginTransaction(IsolationLevel.Serialize))
+
+    Snapshot : Transaction içinde bir tutarlılık sağlar. Diğer transactionlar ile birbirlerini etkilemez. Örnek olarak , snapshot seviyesinde başlatılan bir transaction 
+    products tablosuna select çeker. 10 kayıt elde eder. FArklı bir transaction bu tabloya 10 kayıt insert ve update edebilir. Insert ve update işlemi diğer transaction da bittiği zaman
+    snapshot seviyesindeki transaction henüz commit edilmediyse tekrar select çektiğimiz durumda hala 10 kayıt gelir. Dirty Read , Non-Repeatable Read ve Phantom Read önlenir.
+    using (var transaction = _context.Database.BeginTransaction(IsolationLevel.Snapshot))
