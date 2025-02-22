@@ -276,3 +276,15 @@ Isolation Level :
     products tablosuna select çeker. 10 kayıt elde eder. FArklı bir transaction bu tabloya 10 kayıt insert ve update edebilir. Insert ve update işlemi diğer transaction da bittiği zaman
     snapshot seviyesindeki transaction henüz commit edilmediyse tekrar select çektiğimiz durumda hala 10 kayıt gelir. Dirty Read , Non-Repeatable Read ve Phantom Read önlenir.
     using (var transaction = _context.Database.BeginTransaction(IsolationLevel.Snapshot))
+
+----------------------------------------------
+
+EF Core Concurrency : 
+ - Db de aynı anda çalışan işlemlerin birbirlerini etkilememesi için kullanılır.
+ - Db de 2 adet concurrency yöntemi vardır. Optimistic Concurrency ve Pessimistic Concurrency.
+    Optimistic Concurrency : Db de aynı anda çalışan işlemlerin birbirlerini etkilememesi için kullanılır. Örnek olarak 2 farklı transaction aynı kaydı ekrana getirir. İkiside kayıt üzerinde düzenleme yapar. 
+    İlk transaction kaydı kaydeder. ikinci transaction da kaydı kaydeder. Eğer aynı kolonlar üzerinde değişiklik yapılmamışsa iki kullanıcıda düzenleme yapmadıkları kolonların değiştiğini farkeder. 
+    Bu durumu önlemek için ef core bize bir yöntem sunar. Bu yöntemde db de bir kolon oluşturulur. Bu kolon db de rowversion olarak adlandırılır. Bu kolon db de herhangi bir değişiklik yapıldığında row version değeri değişir.
+    Row version değeri değişen transaction a kayıt üzerinde değişiklik yapılduğıuna dair bilgi ya da hata fırlatır. Ef Core un bu süreci yönetmesi entity de byte[] tipinde bir property tanımlanması yeterlidir.
+    Onmodelcreating metodu içinde ilgili property için IsRowVersion() metodu kullanılır.
+    DbUpdateConcurrencyException hatası alınır.
